@@ -2,11 +2,11 @@ mod Rsa {
     use dep::noir_bigint::{BigUint56};
     use dep::std::println;
 
-    fn verify_sha256_pkcs1v15(msg: BigUint56, sig: BigUint56, pubkey_e: BigUint56, pubkey_n: BigUint56) -> bool {
+    fn verify_sha256_pkcs1v15(msg_hash: BigUint56, sig: BigUint56, pubkey_e: BigUint56, pubkey_n: BigUint56) -> bool {
         // TODO: implement
         // pubkey_e is usually set to 65537 from keygen
 
-        println("TODO: implement Rsa::verify with args: msg, sig, pubkey");
+        println("TODO: implement Rsa::verify with args: msg_hash, sig, pubkey_e, pubkey_n");
         true
     }
 
