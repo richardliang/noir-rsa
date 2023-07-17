@@ -8,7 +8,7 @@ mod Rsa {
     fn verify_sha256_pkcs1v15(msg_hash: BigUint56, sig: BigUint56, pubkey_e: BigUint56, pubkey_n: BigUint56) -> bool {
         // Part 1: Generate signature^e mod n to get PaddedSHA256Hash(msg)
         let padded_sha256_hash = sig.pow_mod(pubkey_e, pubkey_n);
-        // Part 2: Compare signature^e mod n to PaddedSha256hash(msg)
+        // Part 2: Compare signature^e mod n to msg_hash
         // PaddedSHA256Hash(msg) = Sha256(msg) + Prefix + 00 + PS + 01 + 00 + padding
         compare_signature_hash(padded_sha256_hash.to_bytes(), msg_hash.to_bytes())
     }
