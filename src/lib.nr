@@ -7,25 +7,18 @@ mod Rsa {
 
     fn verify_sha256_pkcs1v15(msg_hash: BigUint56, sig: BigUint56, pubkey_e: BigUint56, pubkey_n: BigUint56) -> bool {
         // Part 1: Generate signature^e mod n to get PaddedSHA256Hash(msg)
-        let padded_sha256_hash = BigUint56 { limbs: [
-            123 as u56,
-            123 as u56,
-            123 as u56,
-            123 as u56,
-            123 as u56,
-            123 as u56,
-            123 as u56,
-            123 as u56,
-            123 as u56,
-            123 as u56,
-        ] };
-
+        let padded_sha256_hash = sig.pow_mod(pubkey_e, pubkey_n);
         // Part 2: Compare signature^e mod n to PaddedSha256hash(msg)
-        // PaddedSHA256Hash(msg) = 00 + 01 + PS + 00 + Prefix + Sha256(msg)
+        // PaddedSHA256Hash(msg) = Sha256(msg) + Prefix + 00 + PS + 01 + 00 + padding
         compare_signature_hash(padded_sha256_hash.to_bytes(), msg_hash.to_bytes())
     }
 
     fn compare_signature_hash(padded_sha256_hash: [u8; MAX_BYTES], msg_hash: [u8; MAX_BYTES]) -> bool {
+        println("Padded SHA256 Hash: ");
+        println(padded_sha256_hash);
+        println("Message Hash: ");
+        println(msg_hash);
+
         for i in 0..32 {
             assert(padded_sha256_hash[i] == msg_hash[i]);
         }
@@ -59,18 +52,18 @@ mod Rsa {
     #[test]
     fn test_verify_sha256_pkcs1v15() {
         assert(verify_sha256_pkcs1v15(
-            BigUint56::from_bytes(
-                [30205687229167149, 52303520279581200, 10418899616278007, 62939303293088981, 1582498294, 0, 0, 0, 0, 0]
-            ),
-            BigUint56::from_bytes(
-                [52388840460205773, 16059914527749976, 53035432771052389, 59579484078742626, 71199613737026561, 66649110679881124, 38209332827314705, 57304721015273457, 8090763553902678, 45]
-            ),
-            BigUint56::from_bytes(
-                [65537, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            ),
-            BigUint56::from_bytes(
-                [523643729546935, 37285915732759769, 40928991701511239, 45789415428536138, 49080693730259150, 57424322104436901, 2444554766475175, 43092924790302856, 2769654272117150, 171]
-            ),
+            BigUint56 {
+                limbs: [60503723948323480, 54161298035806000, 27012600088414088, 24217061042254220, 3153799981, 0, 0, 0, 0, 0]
+            },
+            BigUint56 {
+                limbs: [55229751642955525, 3387357325282344, 55293647890923184, 39104415763957832, 1619665796174313, 58538917026121421, 42799083892223376, 55799955887110396, 864672920360232, 11]
+            },
+            BigUint56 {
+                limbs: [65537, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            BigUint56 {
+                limbs: [58658486617058133, 60448007089510078, 38078312823104700, 21692380715596569, 47263115411407232, 21587213462559447, 635655787029941, 3458672493564279, 19225757176393417, 142]
+            }
         ));
     }
 
