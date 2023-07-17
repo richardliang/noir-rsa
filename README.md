@@ -16,3 +16,4 @@ nargo test
 - [Noir BigInt](https://github.com/richardliang/noir-bigint)
 - [Halo2 RSA](https://github.com/zkemail/halo2-rsa) 
 - [Circom RSA](https://github.com/zkp-application/circom-rsa-verify)
+- [Noir RSA Test Generation Scripts](https://github.com/SetProtocol/noir_rsa_scripts)
