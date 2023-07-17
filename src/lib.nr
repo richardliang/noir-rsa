@@ -30,7 +30,7 @@ mod Rsa {
             assert(padded_sha256_hash[i] == msg_hash[i]);
         }
 
-        let hash_prefix: [u8; 19] = [48, 49, 48, 13, 6, 9, 96, 134, 72, 1, 101, 3, 4, 2, 1, 5, 0, 4, 32];
+        let hash_prefix: [u8; 19] = [32, 4, 0, 5, 1, 2, 4, 3, 101, 1, 72, 134, 96, 9, 6, 13, 48, 49, 48];
 
         for i in 32..51 {
             assert(hash_prefix[i - 32] == padded_sha256_hash[i]);
