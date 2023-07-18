@@ -10,7 +10,7 @@ mod Rsa {
         println("...");
         println("...");
         println("...");
-        let padded_sha256_hash = sig.pow_mod(pubkey_e, pubkey_n);
+        let padded_sha256_hash = sig.pow_mod_v2(pubkey_e, pubkey_n);
 
 
         println("Part 2: Compare (signature ** e) mod N to msg_hash");
