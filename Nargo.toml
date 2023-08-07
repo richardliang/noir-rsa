@@ -1,6 +1,0 @@
-[package]
-authors = ["richardliang", "0xSachinK", "felix2feng", "justinkchen"]
-compiler_version = "0.7.1"
-
-[dependencies]
-noir_bigint = { tag = "v0.1.4-demo", git = "https://github.com/richardliang/noir-bigint" }

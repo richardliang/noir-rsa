@@ -1,0 +1,8 @@
+[package]
+name = "rsa"
+authors = ["richardliang", "0xSachinK", "felix2feng", "justinkchen"]
+type = "lib"
+compiler_version = "0.9.0"
+
+[dependencies]
+biguint = { path = "../rsa-biguint" }

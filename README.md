@@ -1,10 +1,21 @@
 # noir-rsa
 
-This repository contains an implementation of a RSA signature verify for the Noir language. Currently supports pkcs1v15 + sha256 and exponent is 65537. RSA is one of the most widely used digital signature schemes in Web2 applications, such as DKIM email verification, TLS etc
+This library contains an implementation of a RSA signature verify for the Noir language. RSA is one of the most widely used digital signature schemes in Web2 applications, such as DKIM email verification, TLS, message encryption etc
 
-The current implementation uses [Noir BigInt](https://github.com/richardliang/noir-bigint) library which adds `mul_mod` and `pow_mod` functions to shuklaayush's [Noir BigInt](https://github.com/shuklaayush/noir-bigint/).
+The repo contains 2 crates:
+- rsa-biguint - Fork of shuklaayush's [Noir BigInt](https://github.com/shuklaayush/noir-bigint/) v0.1.0 with additional functionality
+- rsa - RSA signature verification library
 
-This repo is under heavy development and should not be used in production. Currently `pow_mod` in BigInt runs into Noir compiler (v0.7.1) issues if RSA modulus exceed 2 bits. We are working with the Aztec team on a fix. Typical RSA modulus sizes are 512, 1024 and 2048 bits.
+### RSA BigUint
+Fork of v0.1.0 of [Noir BigInt](https://github.com/shuklaayush/noir-bigint) with the following updates:
+- Updated constants for a max 2048 bit RSA. The BigInt lib only supports 5 limbs
+- Added mulmod and powmod functions
+- Use unconstrained division for powmod
+
+### RSA
+Currently, Noir RSA supports pkcs1v15, sha256, max RSA modulus of 2048 bits and a max exponent value of 17 bits. Typical RSA modulus sizes are 512, 1024 and 2048 bits. And typically, 65537 is used as the public exponent (which is <2^17). 
+
+This repo is under heavy development and should not be used in production.
 
 ## Usage
 Running tests
@@ -13,7 +24,7 @@ nargo test --show-output
 ```
 
 ## Ref
-- [Noir BigInt](https://github.com/richardliang/noir-bigint)
+- [Noir BigInt](https://github.com/shuklaayush/noir-bigint/)
 - [Halo2 RSA](https://github.com/zkemail/halo2-rsa) 
 - [Circom RSA](https://github.com/zkp-application/circom-rsa-verify)
 - [Noir RSA Test Generation Scripts](https://github.com/SetProtocol/noir_rsa_scripts)
