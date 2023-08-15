@@ -374,15 +374,19 @@ impl BigUint56 {
     
     // Returns self * other % modulus.
     fn mulmod(self: Self, other: Self, modulus: Self) -> Self {
-        // TODO: Add assert check
-        // Assume modulus is < 1/2 max bits
-
         // We assume that the mul is < 2^MAX_BITS, so we can just mod the low part.
         let (lo, _hi) = self.mul(other);
+        assert(_hi.is_zero());
+
         let (quo, rem) = lo.div_unsafe(modulus);
         let (quo_modulus, _hi) = quo.mul(modulus);
         let reconstructed_lo = quo_modulus.add(rem);
 
+        // Range check to prevent malicious prover from assigning random values for quo and rem
+        assert(rem.lt(modulus));
+        assert(quo.lte(lo));
+
+        // Constrain that quo * mod + rem == original
         assert(reconstructed_lo.eq(lo));
 
         rem
@@ -903,14 +907,141 @@ fn test_mulmod2() {
     let c = BigUint56::from_bytes([3]);
 
     let d = a.mulmod(b, c);
-    d.println();
     assert(d.eq(BigUint56::from_bytes([1])));
 }
 
+// #[test]
+// fn test_mulmod3() {
+//     // BUG: divide by zero compiler error. See issue: https://github.com/noir-lang/noir/issues/2250
+//     let a = BigUint56{ limbs: [
+//         2, 1, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0
+//     ] };
+//     let b = BigUint56{ limbs: [
+//         0, 1, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0
+//     ] };
+//     let c = BigUint56{ limbs: [
+//         500, 1, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0
+//     ] };
+
+//     let d = a.mulmod(b, c);
+//     d.println();
+
+//     assert(d.eq(BigUint56{ limbs: [
+//         249000, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0
+//     ] }));
+// }
+
+#[test]
+fn test_mulmod_fail() {
+    let a = BigUint56::from_bytes([2]);
+    let b = BigUint56::from_bytes([8]);
+    let c = BigUint56::from_bytes([5]);
+
+    // Reimplement mulmod logic but malicious prover sets own quo and rem values. Without range checks, this should pass
+    let (lo, _hi) = a.mul(b);
+    let (quo_honest, rem_honest) = lo.div_unsafe(c);
+    println("quo_honest: 3");
+    quo_honest.println();
+    println("rem_honest: 1");
+    rem_honest.println();
+    let (quo_modulus_honest, _hi) = quo_honest.mul(c);
+    let reconstructed_lo_honest = quo_modulus_honest.add(rem_honest);
+
+    let quo_malicious = BigUint56::from_bytes([2]);
+    let rem_malicious = BigUint56::from_bytes([6]);
+    println("quo_malicious: 2");
+    quo_malicious.println();
+    println("rem_malicious: 6");
+    rem_malicious.println();
+    let (quo_modulus_malicious, _hi) = quo_malicious.mul(c);
+    let reconstructed_lo_malicious = quo_modulus_malicious.add(rem_malicious);
+
+    println("reconstructed_lo_honest: 16");
+    reconstructed_lo_honest.println();
+    println("reconstructed_lo_malicious: 16");
+    reconstructed_lo_malicious.println();
+    assert(reconstructed_lo_honest.eq(reconstructed_lo_malicious));
+    assert(reconstructed_lo_honest.eq(BigUint56::from_bytes([16])));
+}
+
+#[test]
+fn test_squaremod1() {
+    let a = BigUint56::from_bytes([252]);
+    let b = BigUint56::from_bytes([71]);
+
+    let c = a.squaremod(b);
+
+    assert(c.eq(BigUint56::from_bytes([30])));
+}
+
+// #[test]
+// fn test_squaremod2() {
+//     // BUG: divide by zero compiler error. See issue: https://github.com/noir-lang/noir/issues/2250
+//     let a = BigUint56{ limbs: [
+//         2, 0, 1, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0
+//     ] };
+//     let b = BigUint56{ limbs: [
+//         0, 1, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0
+//     ] };
+
+//     let c = a.squaremod(b);
+
+//     assert(c.eq(BigUint56{ limbs: [
+//         4, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0, 0, 0, 0,
+//         0, 0
+//     ] }));
+// }
+
 #[test]
 fn test_powmod1() {
-    // BUG: for smaller inputs, powmod may fail with `attempt to divide by zero`. e.g. 2 ^ 65537 % 10
-
     let a = BigUint56::from_bytes([252]);
     let b = BigUint56::from_bytes([65537]);
     let c = BigUint56::from_bytes([71]);
