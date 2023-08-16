@@ -3,6 +3,8 @@ use dep::std::println;
 mod utils;
 
 // NOTE: this file is forked from https://github.com/shuklaayush/noir-bigint v0.1.0
+// Once Noir supports const generics, we can use the original crate with our custom limbs instead
+//
 // CHANGELOG:
 // - Updated constants for a max 2048 bit RSA. The BigInt lib only supports 5 limbs
 // - Added mulmod and powmod functions
