@@ -3,10 +3,10 @@ use dep::rsa::{verify_sha256_pkcs1v15};
 use dep::std::hash::sha256;
 use dep::std::println;
 
-global BODY_HASH_BASE64_LENGTH: comptime Field = 44;
-// Specific to the email itself
-global EMAIL_HEADER_LENGTH: comptime Field = 177;
-global EMAIL_BODY_LENGTH: comptime Field = 37;
+global BODY_HASH_BASE64_LENGTH: Field = 44;
+// TODO: this is specific to the email. We want to update this to be a MAX length instead, so any emails below a certain size works
+global EMAIL_HEADER_LENGTH: Field = 177;
+global EMAIL_BODY_LENGTH: Field = 37;
 
 fn main(
     email_header: [u8; EMAIL_HEADER_LENGTH],
@@ -68,7 +68,7 @@ fn dkim_verify(
     )
 }
 
-// TODO: this function can be moved into a separate library
+// TODO: this function can be moved into a separate base64 decode library
 fn base64_lookup(input: u8) -> u8 {
     // A-Z: 65-90
     if input >= 65 & input <= 90 {
@@ -142,11 +142,18 @@ fn test_bodyhash_base64_decode1() {
 }
 
 #[test]
-// TODO: this doesnt work yet because we assume a 2048 bit modulus. We need to generate an email with 1024 modulus instead to avoid
-// `Error: Trying to call acir_proofs_get_total_circuit_size resulted in an error`
-fn test_main() {
-    // Using the utils/test_email.eml provided. Copied from halo2-zk-email
-    // https://github.com/zkemail/halo2-zk-email/blob/main/test_data/test_email1.eml
+// TODO: Add a utils file for generating inputs for the circuit
+// BUG: test_main works, but `nargo prove` fails with `Message:  range start index 18446744072079599120 out of range for slice of length 4208525312`
+// `Location: /Users/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/acvm-backend-barretenberg-0.10.0/src/lib.rs:456`
+fn test_main_1024() {
+    // Verifies the DKIM sig after canonicalizing the email
+    // ```
+    // email: DKIM-Signature: v=1; a=rsa-sha256; d=zkemail.com; s=default; c=relaxed/relaxed; h=from; t=1692577231; bh=PHIrWeyZrG+D5tj8QasSCost5Alh0hs0dZZgoPlcHJw=; b=tb8J5hqRfkbgkgpJmnlElNfNVnf+A+v5iNSwyHH2Mt3/p2kXvABjBv/pzcz0VtZKyfnTXDsl/8Nt91AAGk9ygXP0EDF//b7rgG4d2+sNBqgZTcGNK1r/+aWYOnC3q+cFeV4LYCluhv50bWOQoSC/DVdr+fFJoFXO6wcA2pE/czs=;
+    // From: alice@zkemail.com
+    //
+    // email was meant for @zkemailverify.
+    // ```
+    // 
 
     // Header is 177 bytes
     let email_header = [

@@ -11,12 +11,12 @@ mod utils;
 // - Use unconstrained division for powmod
 
 // Top-level constants related to the size of BigUint56 limbs and bytes.
-global BITS_PER_LIMB: comptime Field = 56; /// Number of bits per limb.
-global NUM_LIMBS: comptime Field = 37;      /// Number of limbs.
+global BITS_PER_LIMB: Field = 56; /// Number of bits per limb.
+global NUM_LIMBS: Field = 37;      /// Number of limbs.
 
-global BYTES_PER_LIMB: comptime Field = 7; /// Number of bytes per limb (BITS_PER_LIMB / 8).
-global MAX_BITS: comptime Field = 2072;     /// Maximum number of bits (BITS_PER_LIMB * NUM_LIMBS).
-global MAX_BYTES: comptime Field = 259;     /// Maximum number of bytes (NUM_LIMBS * BYTES_PER_LIMB).
+global BYTES_PER_LIMB: Field = 7; /// Number of bytes per limb (BITS_PER_LIMB / 8).
+global MAX_BITS: Field = 2072;     /// Maximum number of bits (BITS_PER_LIMB * NUM_LIMBS).
+global MAX_BYTES: Field = 259;     /// Maximum number of bytes (NUM_LIMBS * BYTES_PER_LIMB).
 
 // TODO/NOTES:
 // 1. Noir doesn't support expressions on globals so these are hardcoded
