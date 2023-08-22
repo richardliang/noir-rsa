@@ -13,23 +13,31 @@ fn verify_sha256_pkcs1v15(msg_hash: [u8; 32], sig: BigUint56, pubkey_e: BigUint5
     println("...");
     println("...");
     println("...");
-    // RSA PKCS1v15 padding is 64 bytes so we truncate the extra limbs
-    let mut truncated_padded_sha256_hash = [0 as u8; 64];
-    for i in 0..64 {
-        truncated_padded_sha256_hash[i] = padded_sha256_hash.to_bytes()[i];
-    }
-    compare_signature_sha256(truncated_padded_sha256_hash, msg_hash)
+    compare_signature_sha256(padded_sha256_hash.to_bytes(), msg_hash, sig.to_bytes())
 }
 
-// Compares 64 byte padded sha256 hash to the 32 byte message hash returned from SHA256
-fn compare_signature_sha256(padded_sha256_hash: [u8; 64], msg_hash: [u8; 32]) -> bool {
+// Compares MAX_BYTES byte padded sha256 hash to the 32 byte message hash returned from SHA256
+fn compare_signature_sha256(padded_sha256_hash: [u8; MAX_BYTES], msg_hash: [u8; 32], sig: [u8; MAX_BYTES]) -> bool {
     println("Padded SHA256 Hash: ");
     println(padded_sha256_hash);
     println("Message Hash: ");
     println(msg_hash);
 
+    // Get length of sig (e.g. 1048 = 128 bytes, 2048 = 256 bytes)
+    // TODO: what if sig ends with a 0?
+    // Think it should be fine because little endian means highest index is most significant byte
+    let mut sig_len = 0;
+    let mut sum = 0;
+    for i in 0..MAX_BYTES {
+        sum += sig[MAX_BYTES - 1 - i];
+        if sum == 0 {
+            sig_len = MAX_BYTES - 1 - i;
+        }
+    }
+
     for i in 0..32 {
-        assert(padded_sha256_hash[i] == msg_hash[i]);
+        // Padded hash is reversed
+        assert(padded_sha256_hash[31 - i] == msg_hash[i]);
     }
 
     let hash_prefix: [u8; 19] = [32, 4, 0, 5, 1, 2, 4, 3, 101, 1, 72, 134, 96, 9, 6, 13, 48, 49, 48];
@@ -40,37 +48,64 @@ fn compare_signature_sha256(padded_sha256_hash: [u8; 64], msg_hash: [u8; 32]) ->
 
     assert(padded_sha256_hash[51] == 0);
 
-    for i in 52..62 {
-        assert(padded_sha256_hash[i] == 255);
+    // Sub 32 bytes for hash, 19 bytes for prefix, 1 byte for 0, 1 byte for 1, 1 byte for 0
+    let ps_len = sig_len - 54;
+    for i in 52..MAX_BYTES {
+        if i as u32 < 52 + ps_len as u32 {
+            // PS padding which depends on RSA modulus / sig length. 1024 bits = 128 bytes = 128 - 54 = 74 bytes of 0xFF padding
+            assert(padded_sha256_hash[i] == 255);
+        } else if i as u32 == 52 + ps_len as u32  {
+            // Pad 0x00
+            assert(padded_sha256_hash[i] == 1);
+        } else if i as u32 == 53 + ps_len as u32 {
+            // 0x00
+            assert(padded_sha256_hash[i] == 0);
+        } else {
+            // Padded with 0 until MAX_BYTES
+            assert(padded_sha256_hash[i] == 0);
+        }
     }
-
-    assert(padded_sha256_hash[62] == 1);
-    assert(padded_sha256_hash[63] == 0);
 
     true
 }
 
 #[test]
-fn test_compare_signature_sha256() {
+fn test_compare_signature_sha256_512() {
     println("Verifying that the padded SHA256 hash contains the message hash as well as the appropriate padding and prefixes");
     println("...");
     println("...");
     println("...");
 
     // 64 bytes
-    let padded_sha256_hash: [u8; 64] = [
+    let padded_sha256_hash: [u8; 259] = [
+        // Padded hash
         209, 50, 135, 178, 4, 155, 190, 229, 228, 111, 61, 174, 8, 49, 48, 116, 90, 226, 77, 7, 111, 27, 19, 113, 154, 48, 138, 136, 138, 15, 230, 132, 32, 4, 0, 5, 1, 2, 4, 3, 101, 1, 72, 134, 96, 9, 6, 13, 48, 49,
-        48, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 0
+        48, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 0,
+        // Rest is padded with 0s until max bytes
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ];
+    // This is be, so need to reverse in the padding check
     let msg_hash: [u8; 32] = [
-        209, 50, 135, 178, 4, 155, 190, 229, 228, 111, 61, 174, 8, 49, 48, 116, 90, 226, 77, 7, 111, 27, 19, 113, 154, 48, 138, 136, 138, 15, 230, 132
+        132, 230, 15, 138, 136, 138, 48, 154, 113, 19, 27, 111, 7, 77, 226, 90, 116, 48, 49, 8, 174, 61, 111, 228, 229, 190, 155, 4, 178, 135, 50, 209
+    ];
+    // Values arent used in computation, 64 bytes + rest padding
+    let sig: [u8; 259] = [
+        1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 2, 3, 4, 5, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 2, 3, 4, 5, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 2, 3, 4, 5, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 2, 3, 4, 5, 1, 1, 1, 0, 1,
+        // Rest is padded with 0s until max bytes
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ];
 
-    assert(compare_signature_sha256(padded_sha256_hash, msg_hash));
+    assert(compare_signature_sha256(padded_sha256_hash, msg_hash, sig));
 }
 
 #[test]
-fn test_verify_sha256_pkcs1v15() {
+fn test_verify_sha256_pkcs1v15_512() {
     println("Testing verify_sha256_pkcs1v15 with inputs:");
     println("Original Message: 'About ready south environment second finally. Work agency determine chance mean serve.'");
     println("Signature: 576745224752088557605724579075396240836094784473063860932429343679901243092360596350370941870180683657680865188551095458429546150960618883576826751753989");
@@ -91,7 +126,8 @@ fn test_verify_sha256_pkcs1v15() {
 
     let mut sha256_hash = [0 as u8; 32];
     for i in 0..32 {
-        sha256_hash[i] = msg_hash.to_bytes()[i];
+        // Reverse
+        sha256_hash[i] = msg_hash.to_bytes()[31 - i];
     }
 
     assert(verify_sha256_pkcs1v15(
