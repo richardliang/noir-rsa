@@ -3,6 +3,7 @@ use dep::std::println;
 
 fn verify_sha256_pkcs1v15(msg_hash: [u8; 32], sig: BigUint56, pubkey_e: BigUint56, pubkey_n: BigUint56) -> bool {
     let padded_sha256_hash = sig.powmod(pubkey_e, pubkey_n);
+    println(padded_sha256_hash);
     compare_signature_sha256(padded_sha256_hash.to_bytes(), msg_hash, sig.to_bytes())
 }
 
