@@ -22,4 +22,4 @@ jobs:
 
       - name: Run nargo test
         run: |
-          nargo test
+          cd crates/rsa && nargo test
