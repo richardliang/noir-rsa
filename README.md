@@ -1,6 +1,8 @@
 # noir-rsa
 
-[![CI][ci-shield]][ci-url]
+[![CI][ci-shield]][ci-url-rsa]
+[![CI][ci-shield]][ci-url-dkim]
+[![CI][ci-shield]][ci-url-biguint]
 [![MIT License][license-shield]][license-url]
 
 This library contains an implementation of a RSA signature verify for the Noir language. RSA is one of the most widely used digital signature schemes in Web2 applications, such as DKIM email verification, TLS, message encryption etc
@@ -61,7 +63,9 @@ nargo prove
 - [Noir RSA Test Generation Scripts](https://github.com/SetProtocol/noir_rsa_scripts)
 
 [ci-shield]: https://img.shields.io/github/actions/workflow/status/SetProtocol/noir-rsa/test.yaml?branch=main&label=tests
-[ci-url]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test.yaml
+[ci-url-dkim]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-dkim.yaml
+[ci-url-rsa]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-rsa.yaml
+[ci-url-bigint]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-rsa-biguint.yaml
 
 [license-shield]: https://img.shields.io/badge/License-MIT-green.svg
 [license-url]: https://github.com/SetProtocol/noir-rsa/blob/main/LICENSE
