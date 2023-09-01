@@ -1,5 +1,8 @@
 # noir-rsa
 
+[![CI][ci-shield]][ci-url]
+[![MIT License][license-shield]][license-url]
+
 This library contains an implementation of a RSA signature verify for the Noir language. RSA is one of the most widely used digital signature schemes in Web2 applications, such as DKIM email verification, TLS, message encryption etc
 
 The repo contains 2 crates and 1 example circuit:
@@ -56,3 +59,9 @@ nargo prove
 - [Halo2 RSA](https://github.com/zkemail/halo2-rsa) 
 - [Circom RSA](https://github.com/zkp-application/circom-rsa-verify)
 - [Noir RSA Test Generation Scripts](https://github.com/SetProtocol/noir_rsa_scripts)
+
+[ci-shield]: https://img.shields.io/github/actions/workflow/status/SetProtocol/noir-rsa/test.yaml?branch=main&label=tests
+[ci-url]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test.yaml
+
+[license-shield]: https://img.shields.io/badge/License-MIT-green.svg
+[license-url]: https://github.com/SetProtocol/noir-rsa/blob/main/LICENSE

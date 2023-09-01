@@ -20,6 +20,14 @@ jobs:
         with:
           toolchain: nightly
 
-      - name: Run nargo test
+      - name: Run rsa bigint nargo test
         run: |
-          cd crates/rsa && nargo test
+          cd crates/rsa-biguint && nargo test --show-output
+
+      - name: Run rsa nargo test
+        run: |
+          cd ../rsa && nargo test --show-output
+
+      - name: Run dkim nargo test
+        run: |
+          cd ../../examples/dkim && nargo test --show-output
