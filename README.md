@@ -52,8 +52,7 @@ cd examples/dkim
 nargo test --show-output
 
 nargo compile
-// BUG: below doesn't work due to compiler bug
-nargo prove
+nargo execute
 ```
 
 ## Ref
