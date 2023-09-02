@@ -53,30 +53,8 @@ fn compare_signature_sha256(padded_sha256_hash: [u8; MAX_BYTES], msg_hash: [u8; 
     true
 }
 
-// Background information:
-// (e, n) is the public key (e usually hardcoded to 65537)
-// (d, n) is the private key
-
-// To sign, we need to do sha256hash(msg)^d mod n
-// where n is part of the public key
-
-// To verify, we need to do signature^e mod n where e is
-// usually hardcoded to 65537 and compare sha256hash(msg) to output of
-// signature^e mod n they should be the same
-
-// d is part of the private key
-
-// In python, (pub_key, priv_key) = rsa.newkeys(512) will
-// generate a public and private key pair where the e = 65537
-// that we can use for our test cases
-
 #[test]
 fn test_compare_signature_sha256_512() {
-    println("Verifying that the padded SHA256 hash contains the message hash as well as the appropriate padding and prefixes");
-    println("...");
-    println("...");
-    println("...");
-
     // 64 bytes = 512 bit RSA
     let padded_sha256_hash: [u8; 259] = [
         // Padded hash
@@ -107,11 +85,6 @@ fn test_compare_signature_sha256_512() {
 
 #[test]
 fn test_compare_signature_sha256_1024() {
-    println("Verifying that the padded SHA256 hash contains the message hash as well as the appropriate padding and prefixes");
-    println("...");
-    println("...");
-    println("...");
-
     // 128 bytes = 1024 bit RSA
     let padded_sha256_hash: [u8; 259] = [
         // Padded hash
@@ -142,11 +115,6 @@ fn test_compare_signature_sha256_1024() {
 
 #[test]
 fn test_compare_signature_sha256_2048() {
-    println("Verifying that the padded SHA256 hash contains the message hash as well as the appropriate padding and prefixes");
-    println("...");
-    println("...");
-    println("...");
-
     // 256 bytes = 2048 bit RSA
     let padded_sha256_hash: [u8; 259] = [
         // Padded hash
@@ -184,9 +152,6 @@ fn test_verify_sha256_pkcs1v15_512() {
     println("Signature: 576745224752088557605724579075396240836094784473063860932429343679901243092360596350370941870180683657680865188551095458429546150960618883576826751753989");
     println("e: 65537");
     println("N: 7451117485959741229136504235315630995445254998446480425768448033902713699576518667817925145617353711577597420279881950650483923658530991624401513418271573");
-    println("...");
-    println("...");
-    println("...");
 
     let msg_hash = BigUint56 {
         limbs: [
@@ -239,9 +204,6 @@ fn test_verify_sha256_pkcs1v15_1024() {
     println("Signature: 77929134187608511922495239264200453516249189680211783157419138967626951463678384095540409755596022527110500588052868475990692956380263184337020353767554108632525056703455094349084868832834519825911531623507412532278652516715214908372427289788659924082086149173428600500839052600213260337159219251648111234888");
     println("e: 65537");
     println("N: 107289837545940078268745022404080197756713492641688496535588794073231113663754058018862686762411228470731274703520877348777567694438387351688322419762264406460523426827357314688051865748955987197068553714344169462788708049399769970047547738378550534865494278049193738022398562701983786771227004540503235555427");
-    println("...");
-    println("...");
-    println("...");
 
     let msg_hash = BigUint56 {
         limbs: [

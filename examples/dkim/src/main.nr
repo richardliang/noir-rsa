@@ -68,7 +68,6 @@ fn dkim_verify(
     )
 }
 
-// TODO: this function can be moved into a separate base64 decode library
 fn base64_lookup(input: u8) -> u8 {
     // A-Z: 65-90
     if input >= 65 & input <= 90 {
@@ -91,7 +90,6 @@ fn base64_lookup(input: u8) -> u8 {
     }
 }
 
-// TODO: this function can be generalized and moved into a separate base64-decode lib
 fn bodyhash_base64_decode(encoded: [u8; BODY_HASH_BASE64_LENGTH]) -> [u8; 32] {
     let mut total_bits = [0 as u1; BODY_HASH_BASE64_LENGTH * 6];
     for i in 0..BODY_HASH_BASE64_LENGTH {
@@ -142,9 +140,6 @@ fn test_bodyhash_base64_decode1() {
 }
 
 #[test]
-// TODO: Add a utils file for generating inputs for the circuit
-// BUG: test_main works, but `nargo prove` fails with `Message:  range start index 18446744072079599120 out of range for slice of length 4208525312`
-// `Location: /Users/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/acvm-backend-barretenberg-0.10.0/src/lib.rs:456`
 fn test_main_1024() {
     // Verifies the DKIM sig after canonicalizing the email
     // ```
