@@ -1,8 +1,8 @@
 # noir-rsa
 
-[![CI][ci-shield]][ci-url-rsa]
-[![CI][ci-shield]][ci-url-dkim]
-[![CI][ci-shield]][ci-url-biguint]
+[![CI][ci-shield-rsa]][ci-url-rsa]
+[![CI][ci-shield-dkim]][ci-url-dkim]
+[![CI][ci-shield-bigint]][ci-url-biguint]
 [![MIT License][license-shield]][license-url]
 
 This library contains an implementation of a RSA signature verify for the Noir language. RSA is one of the most widely used digital signature schemes in Web2 applications, such as DKIM email verification, TLS, message encryption etc
@@ -62,10 +62,12 @@ nargo prove
 - [Circom RSA](https://github.com/zkp-application/circom-rsa-verify)
 - [Noir RSA Test Generation Scripts](https://github.com/SetProtocol/noir_rsa_scripts)
 
-[ci-shield]: https://img.shields.io/github/actions/workflow/status/SetProtocol/noir-rsa/test.yaml?branch=main&label=tests
-[ci-url-dkim]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-dkim.yaml
-[ci-url-rsa]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-rsa.yaml
-[ci-url-bigint]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-rsa-biguint.yaml
+[ci-shield-dkim]: https://img.shields.io/github/actions/workflow/status/SetProtocol/noir-rsa/test-dkim.yml?branch=main&label=test-dkim
+[ci-shield-rsa]: https://img.shields.io/github/actions/workflow/status/SetProtocol/noir-rsa/test-rsa.yml?branch=main&label=test-rsa
+[ci-shield-bigint]: https://img.shields.io/github/actions/workflow/status/SetProtocol/noir-rsa/test-rsa-biguint.yml?branch=main&label=test-rsa-biguint
+[ci-url-dkim]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-dkim.yml
+[ci-url-rsa]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-rsa.yml
+[ci-url-biguint]: https://github.com/SetProtocol/noir-rsa/actions/workflows/test-rsa-biguint.yml
 
 [license-shield]: https://img.shields.io/badge/License-MIT-green.svg
 [license-url]: https://github.com/SetProtocol/noir-rsa/blob/main/LICENSE
