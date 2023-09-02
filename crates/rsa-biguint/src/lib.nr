@@ -801,6 +801,7 @@ fn test_bits4() {
     assert(b == 11);
 }
 
+// NOTE: Regular div takes a long time to run and is not used in RSA (we use unconstrained division). Therefore we comment out tests
 // #[test]
 // fn test_div1() {
 //     let a = BigUint56::from_bytes([7]);
@@ -893,27 +894,169 @@ fn test_addmod1() {
 
 #[test]
 fn test_mulmod1() {
-    let a = BigUint56::from_bytes([2]);
-    let b = BigUint56::from_bytes([8]);
-    let c = BigUint56::from_bytes([5]);
+    let a = BigUint56 {
+        limbs: [
+            2, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            8, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let c = BigUint56 {
+        limbs: [
+            5, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
 
     let d = a.mulmod(b, c);
 
-    assert(d.eq(BigUint56::from_bytes([1])));
+    assert(d.eq(
+        BigUint56 {
+            limbs: [
+                1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0
+            ]
+        }
+    ));
 }
 
 #[test]
 fn test_mulmod2() {
-    let a = BigUint56::from_bytes([1125899906842624]); // Max value in u56
-    let b = BigUint56::from_bytes([1125899906842624]);
-    let c = BigUint56::from_bytes([3]);
+    let a = BigUint56 {
+        limbs: [
+            1125899906842624, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            1125899906842624, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let c = BigUint56 {
+        limbs: [
+            3, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
 
     let d = a.mulmod(b, c);
-    assert(d.eq(BigUint56::from_bytes([1])));
+
+    assert(d.eq(
+        BigUint56 {
+            limbs: [
+                1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0
+            ]
+        }
+    ));
+}
+
+#[test]
+fn test_mulmod3() {
+    let a = BigUint56{ limbs: [
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] };
+    let b = BigUint56{ limbs: [
+        12, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] };
+    let c = BigUint56{ limbs: [
+        17, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] };
+
+    let d = a.mulmod(b, c);
+
+    assert(d.eq(
+        BigUint56 { limbs: [
+            13, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ] }
+    ));
 }
 
 // #[test]
-// fn test_mulmod3() {
+// fn test_mulmod4() {
 //     // BUG: divide by zero compiler error. See issue: https://github.com/noir-lang/noir/issues/2250
 //     let a = BigUint56{ limbs: [
 //         2, 1, 0, 0, 0,
@@ -963,9 +1106,42 @@ fn test_mulmod2() {
 
 #[test]
 fn test_mulmod_fail() {
-    let a = BigUint56::from_bytes([2]);
-    let b = BigUint56::from_bytes([8]);
-    let c = BigUint56::from_bytes([5]);
+    let a = BigUint56 {
+        limbs: [
+            2, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            8, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let c = BigUint56 {
+        limbs: [
+            5, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
 
     // Reimplement mulmod logic but malicious prover sets own quo and rem values. Without range checks, this should pass
     let (lo, _hi) = a.mul(b);
@@ -977,8 +1153,30 @@ fn test_mulmod_fail() {
     let (quo_modulus_honest, _hi) = quo_honest.mul(c);
     let reconstructed_lo_honest = quo_modulus_honest.add(rem_honest);
 
-    let quo_malicious = BigUint56::from_bytes([2]);
-    let rem_malicious = BigUint56::from_bytes([6]);
+    let quo_malicious = BigUint56 {
+        limbs: [
+            2, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let rem_malicious = BigUint56 {
+        limbs: [
+            6, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
     println("quo_malicious: 2");
     quo_malicious.println();
     println("rem_malicious: 6");
@@ -991,64 +1189,149 @@ fn test_mulmod_fail() {
     println("reconstructed_lo_malicious: 16");
     reconstructed_lo_malicious.println();
     assert(reconstructed_lo_honest.eq(reconstructed_lo_malicious));
-    assert(reconstructed_lo_honest.eq(BigUint56::from_bytes([16])));
+    assert(reconstructed_lo_honest.eq(
+        BigUint56 {
+            limbs: [
+                16, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0
+            ]
+        }
+    ));
 }
 
 #[test]
 fn test_squaremod1() {
-    let a = BigUint56::from_bytes([252]);
-    let b = BigUint56::from_bytes([71]);
+    let a = BigUint56 {
+        limbs: [
+            252, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            71, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
 
     let c = a.squaremod(b);
 
-    assert(c.eq(BigUint56::from_bytes([30])));
+    assert(c.eq(
+        BigUint56 {
+            limbs: [
+                30, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0,
+                0, 0
+            ]
+        }
+    ));
 }
 
-// #[test]
-// fn test_squaremod2() {
-//     // BUG: divide by zero compiler error. See issue: https://github.com/noir-lang/noir/issues/2250
-//     let a = BigUint56{ limbs: [
-//         2, 0, 1, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0
-//     ] };
-//     let b = BigUint56{ limbs: [
-//         0, 1, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0
-//     ] };
+#[test]
+fn test_squaremod2() {
+    let a = BigUint56{ limbs: [
+        12, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] };
+    let b = BigUint56{ limbs: [
+        17, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] };
 
-//     let c = a.squaremod(b);
+    let c = a.squaremod(b);
 
-//     assert(c.eq(BigUint56{ limbs: [
-//         4, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0, 0, 0, 0,
-//         0, 0
-//     ] }));
-// }
+    assert(c.eq(BigUint56{ limbs: [
+        16, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] }));
+}
 
 #[test]
 fn test_powmod1() {
-    let a = BigUint56::from_bytes([252]);
-    let b = BigUint56::from_bytes([65537]);
-    let c = BigUint56::from_bytes([71]);
+    let a = BigUint56{ limbs: [
+        252, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] };
+    let b = BigUint56{ limbs: [
+        65537, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] };
+    let c = BigUint56{ limbs: [
+        71, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0
+    ] };
 
     let d = a.powmod(b, c);
 
-    assert(d.eq(BigUint56::from_bytes([34])));
+    assert(d.eq(
+        BigUint56{ limbs: [
+            34, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ] }
+    ));
 }

@@ -1,0 +1,21 @@
+name: test-rsa
+
+on:
+  workflow_dispatch:
+
+jobs:
+  nargo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nargo
+        uses: noir-lang/noirup@v0.1.2
+        with:
+          toolchain: nightly
+
+      - name: Run rsa bigint nargo test
+        run: |
+          cd crates/rsa && nargo test --show-output

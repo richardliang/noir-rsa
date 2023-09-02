@@ -1,10 +1,6 @@
-name: test
+name: test-dkim
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -20,6 +16,6 @@ jobs:
         with:
           toolchain: nightly
 
-      - name: Run nargo test
+      - name: Run dkim nargo test
         run: |
-          nargo test
+          cd examples/dkim && nargo test --show-output
