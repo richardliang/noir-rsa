@@ -62,6 +62,8 @@ nargo compile
 nargo execute
 ```
 
+NOTE: The `main` branch only allows RSA bits up to 1024. This is due to proving time being significantly slower if you increase the BigInt limbs to support 2048 bit RSA. Currently proving time for 1024 bits takes ~45 min for the DKIM example. If you need to use a 2048 bit RSA, we support it in the `richard/2048-rsa` [branch](https://github.com/SetProtocol/noir-rsa/tree/richard/2048-rsa)
+
 ## Benchmarks
 TODO
 
