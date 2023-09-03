@@ -31,6 +31,13 @@ Verifies a email DKIM signature which signs an email header. The email header co
 
 This repo is under heavy development and should not be used in production.
 
+## Installation
+In your Nargo.toml file, add the following dependency:
+```
+[dependencies]
+noir-rsa = { tag = "v0.1.0", git = "https://github.com/SetProtocol/noir-rsa" }
+```
+
 ## Usage
 Running tests
 
@@ -54,6 +61,9 @@ nargo test --show-output
 nargo compile
 nargo execute
 ```
+
+## Benchmarks
+TODO
 
 ## Ref
 - [Noir BigInt](https://github.com/shuklaayush/noir-bigint/)
