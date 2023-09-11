@@ -29,8 +29,6 @@ Verifies a email DKIM signature which signs an email header. The email header co
 4. Hash email header (in bytes) using sha256
 5. Verifies the RSA signature matches the public key and the hash of the email header
 
-This repo is under heavy development and should not be used in production.
-
 ## Installation
 In your Nargo.toml file, add the following dependency:
 ```
@@ -72,6 +70,11 @@ TODO
 - [Halo2 RSA](https://github.com/zkemail/halo2-rsa) 
 - [Circom RSA](https://github.com/zkp-application/circom-rsa-verify)
 - [Noir RSA Test Generation Scripts](https://github.com/SetProtocol/noir_rsa_scripts)
+
+## Disclaimer
+
+This is **experimental software** and is provided on an "as is" and "as available" basis. We do **not give any warranties** and will **not be liable for any losses** incurred through any use of this code base.
+
 
 [ci-shield-dkim]: https://img.shields.io/github/actions/workflow/status/SetProtocol/noir-rsa/test-dkim.yml?branch=main&label=test-dkim
 [ci-shield-rsa]: https://img.shields.io/github/actions/workflow/status/SetProtocol/noir-rsa/test-rsa.yml?branch=main&label=test-rsa
