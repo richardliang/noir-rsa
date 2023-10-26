@@ -2,31 +2,38 @@ use dep::biguint::{BigUint56, MAX_BYTES, NUM_LIMBS};
 use dep::rsa::{verify_sha256_pkcs1v15};
 use dep::std::hash::sha256;
 use dep::std::println;
+use dep::sha2;
 
 global BODY_HASH_BASE64_LENGTH: Field = 44;
 // TODO: this is specific to the email. We want to update this to be a MAX length instead, so any emails below a certain size works
-global EMAIL_HEADER_LENGTH: Field = 177;
-global EMAIL_BODY_LENGTH: Field = 37;
+global MAX_EMAIL_HEADER_LENGTH: Field = 192;
+global MAX_EMAIL_BODY_LENGTH: Field = 64;
 
 fn main(
-    email_header: [u8; EMAIL_HEADER_LENGTH],
-    email_body: [u8; EMAIL_BODY_LENGTH],
+    email_header: [u8; MAX_EMAIL_HEADER_LENGTH],
+    email_body: [u8; MAX_EMAIL_BODY_LENGTH],
+    email_header_length: u16,
+    email_body_length: u16,
     body_hash_idx: Field,
     dkim_sig: BigUint56,
     modulus: BigUint56
-) {
+) -> pub bool {
     dkim_verify(
         email_header,
         email_body,
+        email_header_length,
+        email_body_length,
         body_hash_idx,
         dkim_sig,
         modulus
-    );
+    )
 }
 
 fn dkim_verify(
-    email_header: [u8; EMAIL_HEADER_LENGTH],
-    email_body: [u8; EMAIL_BODY_LENGTH],
+    email_header: [u8; MAX_EMAIL_HEADER_LENGTH],
+    email_body: [u8; MAX_EMAIL_BODY_LENGTH],
+    email_header_length: u16,
+    email_body_length: u16,
     body_hash_idx: Field,
     dkim_sig: BigUint56,
     modulus: BigUint56
@@ -41,13 +48,13 @@ fn dkim_verify(
     // Convert encoded body hash to base64
     let body_hash_decoded = bodyhash_base64_decode(encoded_body_hash);
     // Check that body hash matches
-    let hashed_email_body = sha256(email_body);
+    let hashed_email_body = sha2::sha2(email_body, email_body_length);
     println(body_hash_decoded);
     println(hashed_email_body);
     assert(hashed_email_body == body_hash_decoded);
 
     // Check that dkim sig matches
-    let hashed_email_header = sha256(email_header);
+    let hashed_email_header = sha2::sha2(email_header, email_header_length);
     
     // Email public exponent is 65537
     let pubkey_e = BigUint56 {
@@ -150,13 +157,15 @@ fn test_main_1024() {
     // ```
     // 
 
-    // Header is 177 bytes
+    // Header is 177 bytes padded with 15 0s
     let email_header = [
-        102, 114, 111, 109, 58, 97, 108, 105, 99, 101, 64, 122, 107, 101, 109, 97, 105, 108, 46, 99, 111, 109, 13, 10, 100, 107, 105, 109, 45, 115, 105, 103, 110, 97, 116, 117, 114, 101, 58, 118, 61, 49, 59, 32, 97, 61, 114, 115, 97, 45, 115, 104, 97, 50, 53, 54, 59, 32, 100, 61, 122, 107, 101, 109, 97, 105, 108, 46, 99, 111, 109, 59, 32, 115, 61, 100, 101, 102, 97, 117, 108, 116, 59, 32, 99, 61, 114, 101, 108, 97, 120, 101, 100, 47, 114, 101, 108, 97, 120, 101, 100, 59, 32, 104, 61, 102, 114, 111, 109, 59, 32, 116, 61, 49, 54, 57, 50, 53, 55, 55, 50, 51, 49, 59, 32, 98, 104, 61, 80, 72, 73, 114, 87, 101, 121, 90, 114, 71, 43, 68, 53, 116, 106, 56, 81, 97, 115, 83, 67, 111, 115, 116, 53, 65, 108, 104, 48, 104, 115, 48, 100, 90, 90, 103, 111, 80, 108, 99, 72, 74, 119, 61, 59, 32, 98, 61, 59
+        102, 114, 111, 109, 58, 97, 108, 105, 99, 101, 64, 122, 107, 101, 109, 97, 105, 108, 46, 99, 111, 109, 13, 10, 100, 107, 105, 109, 45, 115, 105, 103, 110, 97, 116, 117, 114, 101, 58, 118, 61, 49, 59, 32, 97, 61, 114, 115, 97, 45, 115, 104, 97, 50, 53, 54, 59, 32, 100, 61, 122, 107, 101, 109, 97, 105, 108, 46, 99, 111, 109, 59, 32, 115, 61, 100, 101, 102, 97, 117, 108, 116, 59, 32, 99, 61, 114, 101, 108, 97, 120, 101, 100, 47, 114, 101, 108, 97, 120, 101, 100, 59, 32, 104, 61, 102, 114, 111, 109, 59, 32, 116, 61, 49, 54, 57, 50, 53, 55, 55, 50, 51, 49, 59, 32, 98, 104, 61, 80, 72, 73, 114, 87, 101, 121, 90, 114, 71, 43, 68, 53, 116, 106, 56, 81, 97, 115, 83, 67, 111, 115, 116, 53, 65, 108, 104, 48, 104, 115, 48, 100, 90, 90, 103, 111, 80, 108, 99, 72, 74, 119, 61, 59, 32, 98, 61, 59,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ];
-    // Body is 37 bytes
+    // Body is 37 bytes padded with 27 0s
     let email_body = [
-        101, 109, 97, 105, 108, 32, 119, 97, 115, 32, 109, 101, 97, 110, 116, 32, 102, 111, 114, 32, 64, 122, 107, 101, 109, 97, 105, 108, 118, 101, 114, 105, 102, 121, 46, 13, 10
+        101, 109, 97, 105, 108, 32, 119, 97, 115, 32, 109, 101, 97, 110, 116, 32, 102, 111, 114, 32, 64, 122, 107, 101, 109, 97, 105, 108, 118, 101, 114, 105, 102, 121, 46, 13, 10,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ];
     let body_hash_idx = 128;
     let dkim_sig = BigUint56 {
@@ -170,11 +179,14 @@ fn test_main_1024() {
         ]
     };
 
-    main(
+    let verified = main(
         email_header,
         email_body,
+        177,
+        37,
         body_hash_idx,
         dkim_sig,
         modulus
     );
+    assert(verified == true);
 }
