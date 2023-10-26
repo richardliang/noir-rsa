@@ -5,7 +5,6 @@ use dep::std::println;
 use dep::sha2;
 
 global BODY_HASH_BASE64_LENGTH: Field = 44;
-// TODO: this is specific to the email. We want to update this to be a MAX length instead, so any emails below a certain size works
 global MAX_EMAIL_HEADER_LENGTH: Field = 192;
 global MAX_EMAIL_BODY_LENGTH: Field = 64;
 
