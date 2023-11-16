@@ -2,5 +2,5 @@
 name = "biguint"
 authors = ["shuklaayush"]
 type = "lib"
-compiler_version = "0.10.1"
+compiler_version = "0.19.2"
 
