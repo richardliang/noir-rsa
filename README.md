@@ -76,23 +76,40 @@ NOTE: The `main` branch only allows RSA bits up to 1024. This is due to proving 
 
 ### DKIM Example
 
+```
++---------+------------------------+--------------+----------------------+
+| Package | Language               | ACIR Opcodes | Backend Circuit Size |
++---------+------------------------+--------------+----------------------+
+| dkim    | PLONKCSat { width: 3 } | 1651288      | 3051532              |
++---------+------------------------+--------------+----------------------+
+```
+
 #### CLI
 
 On M2 Macbook Air, using Nargo [nightly (3140468)](https://github.com/noir-lang/noir/releases/tag/nightly-2023-11-29):
 
-Running tests (multi-threaded) takes approximately 5 mins:
+Running tests take approximately 5 mins:
 
 ```
 % time nargo test --package dkim
 nargo test  301.44s user 2.98s system 99% cpu 5:06.78 total
 ```
 
-Proving (single-threaded) takes approximately 50 mins:
+Compiling takes approximately 27 mins:
+
+```
+% time nargo compile --package dkim
+nargo compile --package dkim  1613.97s user 9.46s system 97% cpu 27:51.45 total
+```
+
+Proving takes approximately 50 mins:
 
 ```
 % time nargo prove --package dkim
-nargo prove --package dkim  3204.98s user 122.97s system 129% cpu 42:48.22 total
+nargo prove --package dkim  2399.91s user 95.40s system 140% cpu 29:39.19 total
 ```
+
+NOTE: Running `nargo prove` for the first time includes also program compilation and witness execution. Subsequent proves without modifications to the program and program inputs would utilize the cached artifacts.
 
 #### Browser
 
