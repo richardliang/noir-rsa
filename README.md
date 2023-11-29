@@ -102,7 +102,14 @@ Compiling takes approximately 27 mins:
 nargo compile --package dkim  1613.97s user 9.46s system 97% cpu 27:51.45 total
 ```
 
-Proving takes approximately 50 mins:
+Executing for witness takes approximately 25 mins:
+
+```
+% time nargo execute witness --package dkim
+nargo execute witness --package dkim  1473.00s user 6.01s system 90% cpu 27:10.01 total
+```
+
+Proving takes approximately 40 mins:
 
 ```
 % time nargo prove --package dkim
