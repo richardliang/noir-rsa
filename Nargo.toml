@@ -1,2 +1,2 @@
 [workspace]
-members = ["crates/rsa", "crates/rsa-biguint"]
+members = ["crates/rsa", "crates/rsa-biguint", "examples/dkim"]
