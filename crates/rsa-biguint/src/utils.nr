@@ -1,4 +1,4 @@
-// NOTE: this file is forked from https://github.com/shuklaayush/noir-bigint (git commit: e50d7de7ccbbdf9853aa941c7907311b55468712)
+// NOTE: this file is forked from https://github.com/shuklaayush/noir-bigint/blob/d3682670f4323f7f273043c281f365a7bfb992d4/crates/biguint/src/utils.nr
 
 use crate::BITS_PER_LIMB as BITS;
 use dep::std;

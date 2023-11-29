@@ -2,7 +2,7 @@ use dep::std::println;
 
 mod utils;
 
-// NOTE: this file is forked from https://github.com/shuklaayush/noir-bigint (git commit: e50d7de7ccbbdf9853aa941c7907311b55468712)
+// NOTE: this file is forked from https://github.com/shuklaayush/noir-bigint/blob/d3682670f4323f7f273043c281f365a7bfb992d4/crates/biguint/src/lib.nr
 // Once Noir supports const generics, we can use the original crate with our custom limbs instead
 //
 // CHANGELOG:

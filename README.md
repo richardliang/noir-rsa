@@ -9,13 +9,13 @@ This library contains an implementation of a RSA signature verify for the Noir l
 
 The repo contains 2 crates and 1 example circuit:
 
-- rsa-biguint - Fork of shuklaayush's [Noir BigInt](https://github.com/shuklaayush/noir-bigint/) v0.1.0 with additional functionality
+- rsa-biguint - Fork of shuklaayush's [Noir BigInt](https://github.com/shuklaayush/noir-bigint/) with additional functionality
 - rsa - RSA signature verification library
 - dkim - DKIM email verification circuit
 
 ### RSA BigUint
 
-Fork of v0.1.0 of [Noir BigInt](https://github.com/shuklaayush/noir-bigint) with the following updates:
+Fork of [Noir BigInt (commit: cfd409b)](https://github.com/shuklaayush/noir-bigint/tree/cfd409b689c28a14baf25b2d8e3ea1c5bdbd0862) with the following updates:
 
 - Updated constants for a max 2048 bit RSA. The BigInt lib only supports 5 limbs
 - Added mulmod and powmod functions
@@ -41,40 +41,60 @@ In your Nargo.toml file, add the following dependency:
 
 ```
 [dependencies]
-noir-rsa = { tag = "v0.1.0", git = "https://github.com/SetProtocol/noir-rsa" }
+noir-rsa = { tag = "main", git = "https://github.com/SetProtocol/noir-rsa" }
 ```
 
 ## Usage
 
-Running tests
+The package names of the respective crates are:
 
-For the RSA crate:
+- RSA: `rsa`
+- RSA BigUint: `biguint`
+- DKIM example: `dkim`
 
-```
-cd crates/rsa
-nargo test --show-output
-```
+Replace `<PACKAGE>` in the following commands with the name of the package you would like to run.
 
-For the RSA biguint crate:
+### Running tests
 
-```
-cd crates/rsa-biguint
-nargo test --show-output
-```
-
-For the DKIM example
+At project root, run:
 
 ```
-cd examples/dkim
-nargo test --show-output
+nargo test --package <PACKAGE> --show-output
+```
 
-nargo compile
-nargo execute
+### Proving the DKIM example
+
+At project root, run:
+
+```
+nargo prove --package dkim
 ```
 
 NOTE: The `main` branch only allows RSA bits up to 1024. This is due to proving time being significantly slower if you increase the BigInt limbs to support 2048 bit RSA. Currently proving time for 1024 bits takes ~45 min for the DKIM example. If you need to use a 2048 bit RSA, we support it in the `richard/2048-rsa` [branch](https://github.com/SetProtocol/noir-rsa/tree/richard/2048-rsa)
 
 ## Benchmarks
+
+### DKIM Example
+
+#### CLI
+
+On M2 Macbook Air, using Nargo [nightly (3140468)](https://github.com/noir-lang/noir/releases/tag/nightly-2023-11-29):
+
+Running tests (multi-threaded) takes approximately 5 mins:
+
+```
+% time nargo test --package dkim
+nargo test  301.44s user 2.98s system 99% cpu 5:06.78 total
+```
+
+Proving (single-threaded) takes approximately 50 mins:
+
+```
+% time nargo prove --package dkim
+nargo prove --package dkim  3204.98s user 122.97s system 129% cpu 42:48.22 total
+```
+
+#### Browser
 
 TODO
 
