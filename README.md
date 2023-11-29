@@ -109,7 +109,7 @@ Executing for witness takes approximately 25 mins:
 nargo execute witness --package dkim  1473.00s user 6.01s system 90% cpu 27:10.01 total
 ```
 
-Proving takes approximately 40 mins:
+Executing + proving (as `nargo prove` does not make use of cached witnesses yet) takes approximately 40 mins:
 
 ```
 % time nargo prove --package dkim
