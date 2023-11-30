@@ -74,6 +74,16 @@ NOTE: The `main` branch only allows RSA bits up to 1024. This is due to proving 
 
 ## Benchmarks
 
+### RSA signature verification
+
+#### CLI
+
+TODO
+
+#### Browser
+
+TODO
+
 ### DKIM Example
 
 ```
