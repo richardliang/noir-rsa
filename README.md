@@ -116,7 +116,7 @@ Executing + proving (as `nargo prove` always re-executes for witness) takes appr
 nargo prove --package dkim  2399.91s user 95.40s system 140% cpu 29:39.19 total
 ```
 
-NOTE: Running `nargo prove` for the first time includes also program compilation and witness execution. Subsequent proves without modifications to the program and program inputs would utilize the cached artifacts.
+NOTE: `nargo prove` includes program compilation if compiled artifacts do not already exist, where subsequent runs without program modifications would make use of the cached artifacts.
 
 #### Browser
 
