@@ -2,7 +2,7 @@ use dep::std::println;
 
 mod utils;
 
-// NOTE: this file is forked from https://github.com/shuklaayush/noir-bigint v0.1.0
+// NOTE: this file is forked from https://github.com/shuklaayush/noir-bigint/blob/d3682670f4323f7f273043c281f365a7bfb992d4/crates/biguint/src/lib.nr
 // Once Noir supports const generics, we can use the original crate with our custom limbs instead
 //
 // CHANGELOG:
@@ -12,11 +12,11 @@ mod utils;
 
 // Top-level constants related to the size of BigUint56 limbs and bytes.
 global BITS_PER_LIMB: Field = 56; /// Number of bits per limb.
-global NUM_LIMBS: Field = 37;      /// Number of limbs.
+global NUM_LIMBS: Field = 37; /// Number of limbs.
 
 global BYTES_PER_LIMB: Field = 7; /// Number of bytes per limb (BITS_PER_LIMB / 8).
-global MAX_BITS: Field = 2072;     /// Maximum number of bits (BITS_PER_LIMB * NUM_LIMBS).
-global MAX_BYTES: Field = 259;     /// Maximum number of bytes (NUM_LIMBS * BYTES_PER_LIMB).
+global MAX_BITS: Field = 2072; /// Maximum number of bits (BITS_PER_LIMB * NUM_LIMBS).
+global MAX_BYTES: Field = 259; /// Maximum number of bytes (NUM_LIMBS * BYTES_PER_LIMB).
 
 // TODO/NOTES:
 // 1. Noir doesn't support expressions on globals so these are hardcoded
@@ -39,26 +39,26 @@ struct BigUint56 {
 
 impl BigUint56 {
     /// Creates a new BigUint56 initialized to zero.
-    fn zero() -> Self {
+    pub fn zero() -> Self {
         Self { limbs: [0 as u56; NUM_LIMBS] }
     }
 
     /// Creates a new BigUint56 initialized to one.
-    fn one() -> Self {
+    pub fn one() -> Self {
         let mut one = BigUint56::zero();
         one.limbs[0] = 1;
         one
     }
     
     /// Constructs a BigUint56 from a single `u56` value.
-    fn from_u56(val: u56) -> Self {
+    pub fn from_u56(val: u56) -> Self {
         let mut buint = BigUint56::zero();
         buint.limbs[0] = val;
         buint
     }
 
     /// Constructs a BigUint56 from a byte array in little-endian format.
-    fn from_bytes(bytes: [u8]) -> Self {
+    pub fn from_bytes(bytes: [u8]) -> Self {
         // TODO: Do I need this check?
         assert(bytes.len() as u56 <= MAX_BYTES as u56);
 
@@ -179,20 +179,20 @@ impl BigUint56 {
     /// Shifts the BigUint56 instance to the left by a specified number of bits `n`.
     /// where `0 <= n < Limb::BITS`,
     /// Returns the shifted result and the carry.
-    // TODO: Should I return early if n == 0?
     fn shl_limb(self: Self, n: u56) -> (Self, u56) {
         assert(n < BITS_PER_LIMB as u56);
 
-        let mut res = BigUint56::zero();
+        let mut res = self;
 
         let rshift = BITS_PER_LIMB as u56 - n;
-        let carry = self.limbs[NUM_LIMBS - 1] >> rshift;
+        let carry = if (n == 0) { 0 } else { self.limbs[NUM_LIMBS - 1] >> rshift };
 
-        res.limbs[0] = self.limbs[0] << n;
-        for i in 1..NUM_LIMBS {
-            res.limbs[i] = (self.limbs[i] << n) | (self.limbs[i - 1] >> rshift);
-        // BUG: Panics without this semi-colon.
-        };
+        if (n > 0) {
+            res.limbs[0] = self.limbs[0] << n;
+            for i in 1..NUM_LIMBS {
+                res.limbs[i] = (self.limbs[i] << n) | (self.limbs[i - 1] >> rshift);
+            }
+        }
 
         (res, carry)
     }
@@ -234,13 +234,17 @@ impl BigUint56 {
     fn shr_limb(self: Self, n: u56) -> Self {
         assert(n < BITS_PER_LIMB as u56);
 
-        let mut res = BigUint56::zero();
-        let lshift = BITS_PER_LIMB as u56 - n;
+        let mut res = self;
 
-        for i in 0..NUM_LIMBS-1 {
-            res.limbs[i] = (self.limbs[i] >> n) | (self.limbs[i + 1] << lshift);
+        if (n > 0) {
+            let lshift = BITS_PER_LIMB as u56 - n;
+
+            for i in 0..NUM_LIMBS-1 {
+                res.limbs[i] = (self.limbs[i] >> n) | (self.limbs[i + 1] << lshift);
+            }
+            res.limbs[NUM_LIMBS - 1] = self.limbs[NUM_LIMBS - 1] >> n;
         }
-        res.limbs[NUM_LIMBS - 1] = self.limbs[NUM_LIMBS - 1] >> n;
+
 
         res
     }
@@ -427,7 +431,7 @@ impl BigUint56 {
         res
     }
 
-    // Print as bytes
+    // Prints the BigUint56 instance as a byte array.
     fn println(self: Self) {
         let bytes = self.to_bytes();
         println(bytes);
@@ -438,48 +442,66 @@ impl BigUint56 {
 fn test_from_bytes1() {
     let bytes = [2 as u8];
     let a = BigUint56::from_bytes(bytes);
-    assert(a.eq(BigUint56{ limbs: [
-        2, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] }));
+    assert(
+        a.eq(
+            BigUint56 {
+        limbs: [
+            2, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
 fn test_from_bytes2() {
     let bytes = [255 as u8; 7];
     let a = BigUint56::from_bytes(bytes);
-    assert(a.eq(BigUint56{ limbs: [
-        0-1 as u56, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] }));
+    assert(
+        a.eq(
+            BigUint56 {
+        limbs: [
+            0xffffffffffffff, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
 fn test_from_bytes3() {
     let bytes = [255 as u8; 8];
     let a = BigUint56::from_bytes(bytes);
-    assert(a.eq(BigUint56{ limbs: [
-        0-1 as u56, 255, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] }));
+    assert(
+        a.eq(
+            BigUint56 {
+        limbs: [
+            0xffffffffffffff, 255, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
@@ -488,7 +510,7 @@ fn test_to_bytes1() {
     let b = BigUint56::one();
 
     let c = a.sub(b);
-    assert(c.to_bytes() == [0-1 as u8; MAX_BYTES]);
+    assert(c.to_bytes() == [0xff; MAX_BYTES]);
 }
 
 #[test]
@@ -511,43 +533,53 @@ fn test_add1() {
 
 #[test]
 fn test_add2() {
-    let a = BigUint56{ limbs: [
-        0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
-    let b = BigUint56{ limbs: [
-        1, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
+    let a = BigUint56 {
+        limbs: [
+            0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
     let sum = a.add(b);
 
-    assert(sum.eq(BigUint56{ limbs: [
-        0, 0, 0, 0, 1,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] }));
+    assert(
+        sum.eq(
+            BigUint56 {
+        limbs: [
+            0, 0, 0, 0, 1,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
 fn test_adc1() {
-    let a = BigUint56{ limbs: [0-1 as u56; NUM_LIMBS] };
+    let a = BigUint56 { limbs: [0xffffffffffffff; NUM_LIMBS] };
     let b = BigUint56::one();
     let (sum, carry) = a.adc(b);
 
@@ -566,65 +598,79 @@ fn test_sub1() {
 
 #[test]
 fn test_sub2() {
-    let a = BigUint56{ limbs: [
-        1, 2, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
-    let b = BigUint56{ limbs: [
-        2, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
+    let a = BigUint56 {
+        limbs: [
+            1, 2, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            2, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
     let diff = a.sub(b);
 
-    assert(diff.eq(BigUint56{ limbs: [
-        0-1 as u56, 1, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] }));
+    assert(
+        diff.eq(
+            BigUint56 {
+        limbs: [
+            0xffffffffffffff, 1, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
 fn test_sbb1() {
-    let a = BigUint56{ limbs: [
-        1, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
-    let b = BigUint56{ limbs: [
-        2, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
+    let a = BigUint56 {
+        limbs: [
+            1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            2, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
     let (diff, borrow) = a.sbb(b);
 
-    assert(diff.eq(BigUint56{ limbs: [0-1 as u56; 37] }));
+    assert(diff.eq(BigUint56 { limbs: [0xffffffffffffff; NUM_LIMBS] }));
     assert(borrow >> (BITS_PER_LIMB as u56 - 1) == 1);
 }
 
@@ -640,21 +686,27 @@ fn test_mul1() {
 
 #[test]
 fn test_mul2() {
-    let a = BigUint56{ limbs: [0-1 as u56; 37] };
-    let b = BigUint56{ limbs: [0-1 as u56; 37] };
+    let a = BigUint56 { limbs: [0xffffffffffffff; NUM_LIMBS] };
+    let b = BigUint56 { limbs: [0xffffffffffffff; NUM_LIMBS] };
     let (lo, hi) = a.mul(b);
 
     assert(lo.eq(BigUint56::one()));
-    assert(hi.eq(BigUint56{ limbs: [
-        0-2 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56,
-        0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56,
-        0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56,
-        0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56,
-        0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56,
-        0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56,
-        0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56, 0-1 as u56,
-        0-1 as u56, 0-1 as u56
-    ] }));
+    assert(
+        hi.eq(
+            BigUint56 {
+        limbs: [
+            0xfffffffffffffe, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff,
+            0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff,
+            0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff,
+            0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff,
+            0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff,
+            0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff,
+            0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff, 0xffffffffffffff,
+            0xffffffffffffff, 0xffffffffffffff
+        ]
+    }
+        )
+    );
 }
 
 #[test]
@@ -787,7 +839,7 @@ fn test_bits2() {
 
 #[test]
 fn test_bits3() {
-    let a = BigUint56::from_bytes([0-1 as u8]);
+    let a = BigUint56::from_bytes([0xff]);
     let b = a.nbits();
 
     assert(b == 8);
@@ -933,20 +985,22 @@ fn test_mulmod1() {
 
     let d = a.mulmod(b, c);
 
-    assert(d.eq(
-        BigUint56 {
-            limbs: [
-                1, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0
-            ]
-        }
-    ));
+    assert(
+        d.eq(
+            BigUint56 {
+        limbs: [
+            1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
@@ -990,59 +1044,69 @@ fn test_mulmod2() {
 
     let d = a.mulmod(b, c);
 
-    assert(d.eq(
-        BigUint56 {
-            limbs: [
-                1, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0
-            ]
-        }
-    ));
+    assert(
+        d.eq(
+            BigUint56 {
+        limbs: [
+            1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
 fn test_mulmod3() {
-    let a = BigUint56{ limbs: [
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        1, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
-    let b = BigUint56{ limbs: [
-        12, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
-    let c = BigUint56{ limbs: [
-        17, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
+    let a = BigUint56 {
+        limbs: [
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            12, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 1, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let c = BigUint56 {
+        limbs: [
+            17, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
 
     let d = a.mulmod(b, c);
 
-    assert(d.eq(
-        BigUint56 { limbs: [
+    assert(
+        d.eq(
+            BigUint56 {
+        limbs: [
             13, 0, 0, 0, 0,
             0, 0, 0, 0, 0,
             0, 0, 0, 0, 0,
@@ -1051,8 +1115,10 @@ fn test_mulmod3() {
             0, 0, 0, 0, 0,
             0, 0, 0, 0, 0,
             0, 0
-        ] }
-    ));
+        ]
+    }
+        )
+    );
 }
 
 // #[test]
@@ -1189,20 +1255,22 @@ fn test_mulmod_fail() {
     println("reconstructed_lo_malicious: 16");
     reconstructed_lo_malicious.println();
     assert(reconstructed_lo_honest.eq(reconstructed_lo_malicious));
-    assert(reconstructed_lo_honest.eq(
-        BigUint56 {
-            limbs: [
-                16, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0
-            ]
-        }
-    ));
+    assert(
+        reconstructed_lo_honest.eq(
+            BigUint56 {
+        limbs: [
+            16, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
@@ -1234,96 +1302,116 @@ fn test_squaremod1() {
 
     let c = a.squaremod(b);
 
-    assert(c.eq(
-        BigUint56 {
-            limbs: [
-                30, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0,
-                0, 0
-            ]
-        }
-    ));
+    assert(
+        c.eq(
+            BigUint56 {
+        limbs: [
+            30, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
 fn test_squaremod2() {
-    let a = BigUint56{ limbs: [
-        12, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
-    let b = BigUint56{ limbs: [
-        17, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
+    let a = BigUint56 {
+        limbs: [
+            12, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 1, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            17, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
 
     let c = a.squaremod(b);
 
-    assert(c.eq(BigUint56{ limbs: [
-        16, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] }));
+    assert(
+        c.eq(
+            BigUint56 {
+        limbs: [
+            16, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    }
+        )
+    );
 }
 
 #[test]
 fn test_powmod1() {
-    let a = BigUint56{ limbs: [
-        252, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
-    let b = BigUint56{ limbs: [
-        65537, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
-    let c = BigUint56{ limbs: [
-        71, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0
-    ] };
+    let a = BigUint56 {
+        limbs: [
+            252, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let b = BigUint56 {
+        limbs: [
+            65537, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
+    let c = BigUint56 {
+        limbs: [
+            71, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0
+        ]
+    };
 
     let d = a.powmod(b, c);
 
-    assert(d.eq(
-        BigUint56{ limbs: [
+    assert(
+        d.eq(
+            BigUint56 {
+        limbs: [
             34, 0, 0, 0, 0,
             0, 0, 0, 0, 0,
             0, 0, 0, 0, 0,
@@ -1332,6 +1420,8 @@ fn test_powmod1() {
             0, 0, 0, 0, 0,
             0, 0, 0, 0, 0,
             0, 0
-        ] }
-    ));
+        ]
+    }
+        )
+    );
 }
