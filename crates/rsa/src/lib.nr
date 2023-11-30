@@ -1,7 +1,7 @@
 use dep::biguint::{BigUint56, MAX_BYTES};
 use dep::std::println;
 
-fn verify_sha256_pkcs1v15(
+pub fn verify_sha256_pkcs1v15(
     msg_hash: [u8; 32],
     sig: BigUint56,
     pubkey_e: BigUint56,
