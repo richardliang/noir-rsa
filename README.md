@@ -96,37 +96,30 @@ TODO
 
 #### CLI
 
-On M2 Macbook Air, using Nargo [nightly (3140468)](https://github.com/noir-lang/noir/releases/tag/nightly-2023-11-29):
+On M2 Macbook Air, using Nargo v0.21.0 paired with the default proving backend:
 
-Running tests take approximately 5 mins:
-
-```
-% time nargo test --package dkim
-nargo test  301.44s user 2.98s system 99% cpu 5:06.78 total
-```
-
-Compiling takes approximately 27 mins:
+Compiling takes approximately 30 seconds:
 
 ```
 % time nargo compile --package dkim
-nargo compile --package dkim  1613.97s user 9.46s system 97% cpu 27:51.45 total
+nargo compile --package dkim  27.59s user 1.59s system 99% cpu 29.373 total
 ```
 
-Executing for witness takes approximately 25 mins:
+Executing for witness takes approximately 2 mins:
 
 ```
 % time nargo execute witness --package dkim
-nargo execute witness --package dkim  1473.00s user 6.01s system 90% cpu 27:10.01 total
+nargo execute witness --package dkim  106.11s user 1.05s system 100% cpu 1:47.14 total
 ```
 
-Executing + proving (as `nargo prove` always re-executes for witness) takes approximately 40 mins:
+Executing + proving (as `nargo prove` always re-executes for witness) takes approximately 5 mins:
 
 ```
 % time nargo prove --package dkim
-nargo prove --package dkim  2399.91s user 95.40s system 140% cpu 29:39.19 total
+nargo prove --package dkim  944.88s user 64.86s system 343% cpu 4:54.32 total
 ```
 
-NOTE: `nargo prove` includes program compilation if compiled artifacts do not already exist, where subsequent runs without program modifications would make use of the cached artifacts.
+NOTE: Running `nargo prove` the first time / before `nargo compile` would automatically include program compilation. Subsequent runs without program modifications would make use of the cached artifacts and provide more representative benchmarking results.
 
 #### Browser
 
