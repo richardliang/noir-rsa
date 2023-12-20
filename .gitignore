@@ -1,5 +1,5 @@
 .DS_Store
 
 # Nargo outputs
-/proofs
-debug_dkim.json
+proofs/
+target/
